@@ -2,6 +2,7 @@ let canvas;
 let convasContext;
 let playerHeight = 80;
 let sam = 1;
+let movementX;
 
 window.onload = function () {
   canvas = document.getElementById("game-area");
@@ -33,9 +34,9 @@ window.onload = function () {
   );
 
   intialBallPosition();
-  //   setInterval(() => {
-  //     moveBall();
-  //   }, 1000);
+  setInterval(() => {
+    moveBallRight();
+  }, 100);
 };
 
 function intialBallPosition() {
@@ -49,18 +50,27 @@ function intialBallPosition() {
     2 * Math.PI
   );
   canvasContext.fill();
+  movementX = canvas.width / 2;
 }
 
-function moveBall() {
-  canvasContext.fillStyle = "#FF7043";
-  canvasContext.beginPath();
-  canvasContext.arc(
-    canvas.width / 2 - 30 * sam,
-    canvas.height / 2 - 20,
-    10,
-    0,
-    2 * Math.PI
-  );
-  canvasContext.fill();
-  sam += 1;
+function moveBallLeft() {
+  if (movementX >= 20) {
+    canvasContext.fillStyle = "#FF7043";
+    canvasContext.beginPath();
+    canvasContext.arc(movementX, canvas.height / 2 - 20, 10, 0, 2 * Math.PI);
+    canvasContext.fill();
+    sam += 1;
+    movementX = canvas.width / 2 - 30 * sam;
+  }
+}
+
+function moveBallRight() {
+  if (movementX <= canvas.width) {
+    canvasContext.fillStyle = "#FF7043";
+    canvasContext.beginPath();
+    canvasContext.arc(movementX, canvas.height / 2 - 20, 10, 0, 2 * Math.PI);
+    canvasContext.fill();
+    sam += 1;
+    movementX = canvas.width / 2 + 30 * sam;
+  }
 }
