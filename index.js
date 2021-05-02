@@ -1,6 +1,9 @@
 let canvas;
 let convasContext;
-let sam = 1;
+let score = {
+  player: 0,
+  computer: 0,
+};
 
 // Game theme
 let fieldColor = "#424242",
@@ -14,8 +17,8 @@ let difficulty = "easy";
 // bots setting
 let playerPosition,
   computerPosition = 0,
-  botHeight = 80,
-  playerSpeed = 15;
+  botHeight = 100,
+  playerSpeed = 30;
 computerSpeed = 15;
 
 // Ball setting
@@ -23,32 +26,33 @@ ballPosition = {
   x: 0,
   y: 0,
 };
-ballSpeed = 20;
+ballSpeed = 5;
 ballY = 10;
+
+let interval;
 
 window.onload = function () {
   initializePlayArea();
-  setupGameComponents();
-
-  let framePerSecond = 10;
-  setInterval(checkBallMovement, 1000 / framePerSecond);
-
+  startGame();
   //   setTimeout(() => {
-  //     setInterval(checkComputerMovement, 1000 / framePerSecond);
+  setInterval(checkComputerMovement, 500);
   //   }, 5000);
 };
+
+function startGame() {
+  let framePersecond = 10;
+  interval = setInterval(checkBallMovement, 1000 / framePersecond);
+}
 
 // This function will help us to steup our game play enviroment
 function initializePlayArea() {
   canvas = document.getElementById("game-area");
   canvasContext = canvas.getContext("2d");
-
-  drawField();
+  createField();
+  setupGameComponents();
 }
 
-function drawField() {
-  canvasContext.clearRect(0, 0, canvas.width, canvas.height);
-
+function createField() {
   //   Creating field where player will play
   canvasContext.fillStyle = fieldColor;
   canvasContext.fillRect(0, 0, canvas.width, canvas.height);
@@ -56,7 +60,11 @@ function drawField() {
   //   Creating mid line
   canvasContext.fillStyle = "#FAFAFA";
   canvasContext.fillRect(canvas.width / 2, 10, 2, canvas.height - 20);
+}
 
+function drawField() {
+  canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+  createField();
   setUpBallPosition();
   setUpPlayerPosition();
   setUpComputerPosition();
@@ -78,13 +86,13 @@ function setupGameComponents() {
 // Will help us setting position of the player in the game
 function setUpPlayerPosition() {
   canvasContext.fillStyle = playerColor;
-  canvasContext.fillRect(10, playerPosition, 20, botHeight);
+  canvasContext.fillRect(10, playerPosition, 10, botHeight);
 }
 
 // Will help us setting position of the computer in the game
 function setUpComputerPosition() {
   canvasContext.fillStyle = computerColor;
-  canvasContext.fillRect(canvas.width - 30, computerPosition, 20, botHeight);
+  canvasContext.fillRect(canvas.width - 20, computerPosition, 10, botHeight);
 }
 
 function setUpBallPosition() {
@@ -98,18 +106,39 @@ function setUpBallPosition() {
 function checkBallMovement() {
   ballPosition.x += ballSpeed;
   ballPosition.y += ballY;
-  if (ballPosition.x > canvas.width - 60) {
-    ballSpeed = -ballSpeed;
-  } else if (ballPosition.x <= 40) {
-    ballSpeed = -ballSpeed;
+  if (ballPosition.x >= canvas.width - 30) {
+    if (
+      ballPosition.y > computerPosition &&
+      ballPosition.y < computerPosition + botHeight
+    ) {
+      ballSpeed = -ballSpeed;
+      steepBall(computerPosition);
+    } else {
+      resetBallPosition();
+    }
+  } else if (ballPosition.x <= 30) {
+    if (
+      ballPosition.y > playerPosition &&
+      ballPosition.y < playerPosition + botHeight
+    ) {
+      ballSpeed = -ballSpeed;
+      steepBall(playerPosition);
+    } else {
+      resetBallPosition();
+    }
   }
 
-  if (ballPosition.y > canvas.height) {
+  if (ballPosition.y > canvas.height - 30) {
     ballY = -ballY;
-  } else if (ballPosition.y < 0) {
+  } else if (ballPosition.y < 20) {
     ballY = -ballY;
   }
   drawField();
+}
+
+function steepBall(position) {
+  let deltaY = ballPosition.y - (position + botHeight / 2);
+  ballY = deltaY * 0.35;
 }
 
 // Moves the player in up and down direction on its own axis
@@ -117,13 +146,13 @@ function checkPlayerMovement(event) {
   if (
     event &&
     (event.keyCode === 30 || event.key === "ArrowUp") &&
-    playerPosition > 10
+    playerPosition > 20
   ) {
     playerPosition = playerPosition - playerSpeed;
   } else if (
     event &&
     (event.keyCode === 40 || event.key === "ArrowDown") &&
-    playerPosition <= canvas.height - botHeight * 2 + 50
+    playerPosition <= canvas.height - (botHeight + 20)
   ) {
     playerPosition = playerPosition + playerSpeed;
   }
@@ -131,13 +160,24 @@ function checkPlayerMovement(event) {
 }
 
 function checkComputerMovement() {
-  computerPosition += computerSpeed;
-  if (computerPosition > 10) {
-    computerSpeed = -computerSpeed;
-  } else if (computerPosition <= canvas.height - botHeight * 2 + 50) {
-    computerSpeed = -computerSpeed;
+  let center = computerPosition + botHeight / 2;
+  if (center < ballPosition.y) {
+    computerPosition = computerPosition + computerSpeed;
+  } else {
+    computerPosition = computerPosition - computerSpeed;
   }
   drawField();
+}
+
+function resetBallPosition() {
+  ballSpeed = -ballSpeed;
+  ballPosition = {
+    x: canvas.width / 2,
+    y: canvas.height / 2 - 40,
+  };
+  setUpBallPosition();
+  clearInterval(interval);
+  setTimeout(startGame, 2000);
 }
 
 // Moving player
