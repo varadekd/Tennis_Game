@@ -1,76 +1,93 @@
 let canvas;
 let convasContext;
-let playerHeight = 80;
 let sam = 1;
-let movementX;
+
+// Game theme
+let fieldColor = "#424242",
+  playerColor = "#F5F5F5",
+  computerColor = "#F5F5F5",
+  ballColor = "#FF7043";
+
+// Game setting
+let difficulty = "easy";
+
+// bots setting
+let playerPosition,
+  computerPosition = 0;
+let botHeight = 80;
+
+// Ball setting
+ballPosition = {
+  x: 0,
+  y: 0,
+};
+ballSpeed = 20;
 
 window.onload = function () {
+  initializePlayArea();
+  setupGameComponents();
+
+  //   let framePerSecond = 10;
+  //   setInterval(checkBallMovement, 1000 / framePerSecond);
+};
+
+// This function will help us to steup our game play enviroment
+function initializePlayArea() {
   canvas = document.getElementById("game-area");
   canvasContext = canvas.getContext("2d");
 
-  canvasContext.fillStyle = "#424242";
+  //   Creating field where player will play
+  canvasContext.fillStyle = fieldColor;
   canvasContext.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Setting player position
-  canvasContext.fillStyle = "#F5F5F5";
-  canvasContext.fillRect(
-    10,
-    canvas.height / 2 - playerHeight,
-    20,
-    playerHeight
-  );
-
-  //  Mid line
+  //   Creating mid line
   canvasContext.fillStyle = "#FAFAFA";
   canvasContext.fillRect(canvas.width / 2, 10, 2, canvas.height - 20);
+}
 
-  // Setting computer position
-  canvasContext.fillStyle = "#F5F5F5";
-  canvasContext.fillRect(
-    canvas.width - 30,
-    canvas.height / 2 - playerHeight,
-    20,
-    playerHeight
-  );
+// Function is responsible for setting up the game components like player, computer and ball position
+function setupGameComponents() {
+  // Intializing position for the bots and ball before starting the game
+  playerPosition = computerPosition = canvas.height / 2 - botHeight;
+  ballPosition = {
+    x: canvas.width / 2,
+    y: canvas.height / 2 - 40,
+  };
+  setUpPlayerPosition();
+  setUpComputerPosition();
+  setUpBallPosition();
+}
 
-  intialBallPosition();
-  setInterval(() => {
-    moveBallRight();
-  }, 100);
-};
+// Will help us setting position of the player in the game
+function setUpPlayerPosition() {
+  canvasContext.fillStyle = playerColor;
+  canvasContext.fillRect(10, playerPosition, 20, botHeight);
+}
 
-function intialBallPosition() {
-  canvasContext.fillStyle = "#FF7043";
+// Will help us setting position of the computer in the game
+function setUpComputerPosition() {
+  canvasContext.fillStyle = computerColor;
+  canvasContext.fillRect(canvas.width - 30, computerPosition, 20, botHeight);
+}
+
+function setUpBallPosition() {
+  canvasContext.fillStyle = ballColor;
   canvasContext.beginPath();
-  canvasContext.arc(
-    canvas.width / 2,
-    canvas.height / 2 - 40,
-    10,
-    0,
-    2 * Math.PI
-  );
+  canvasContext.arc(ballPosition.x, ballPosition.y, 10, 0, 2 * Math.PI);
   canvasContext.fill();
-  movementX = canvas.width / 2;
 }
 
-function moveBallLeft() {
-  if (movementX >= 20) {
-    canvasContext.fillStyle = "#FF7043";
-    canvasContext.beginPath();
-    canvasContext.arc(movementX, canvas.height / 2 - 20, 10, 0, 2 * Math.PI);
-    canvasContext.fill();
-    sam += 1;
-    movementX = canvas.width / 2 - 30 * sam;
+// Moves the ball in left or write direction
+function checkBallMovement() {
+  ballPosition.x = ballPosition.x + ballSpeed;
+  if (ballPosition.x > canvas.width - 60) {
+    ballSpeed = -ballSpeed;
+    canvasContext.fillStyle = "pink";
+  } else if (ballPosition.x <= 40) {
+    ballSpeed = Math.abs(ballSpeed);
+    canvasContext.fillStyle = "white";
   }
-}
-
-function moveBallRight() {
-  if (movementX <= canvas.width) {
-    canvasContext.fillStyle = "#FF7043";
-    canvasContext.beginPath();
-    canvasContext.arc(movementX, canvas.height / 2 - 20, 10, 0, 2 * Math.PI);
-    canvasContext.fill();
-    sam += 1;
-    movementX = canvas.width / 2 + 30 * sam;
-  }
+  canvasContext.beginPath();
+  canvasContext.arc(ballPosition.x, canvas.height / 2 - 20, 10, 0, 2 * Math.PI);
+  canvasContext.fill();
 }
